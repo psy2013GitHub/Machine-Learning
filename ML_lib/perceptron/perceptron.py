@@ -7,29 +7,29 @@ class perception(object):
         self.eta = eta
 
     def fit(self,train_set,train_label):
-    	'''
-    	train_set,  np array
-    	train_label, np array
-    	'''
-    	nSample, nFeature = np.shape(train_set)
-    	# init w, b
+        '''
+        train_set,  np array
+        train_label, np array
+        '''
+        nSample, nFeature = np.shape(train_set)
+        # init w, b
         w = np.zeros([nFeature,1])
         b = 0.0
         # update w, b
         nEval = 0
         while 1:
-        	if nEval > 100000:
-        		print "Linear Unseparable"
-        		return
-            nWrongSeparate = 0
-        	for i in xrange(nSample):
-        		x = train_set[i,:]
-        		y = train_label[i]
-        	    # sanple i 
-        	    if y * (w * x + b) < 0:
-        	    	nWrongSeparate += 1
-        	    	w += self.eta * y * x
-        	        b += self.eta * y
+          if nEval > 100000:
+            print "Linear Unseparable"
+            return
+          nWrongSeparate = 0
+          for i in xrange(nSample):
+            x = train_set[i,:]
+            y = train_label[i]
+            # sanple i 
+            if y * (w * x + b) < 0:
+               nWrongSeparate += 1
+               w += self.eta * y * x
+               b += self.eta * y
             if nWrongSeparate == 0:
                break
             nEval += 1
