@@ -26,7 +26,7 @@ class perception(object):
             x = train_set[i,:]
             y = train_label[i]
             # sanple i 
-            if y * (w * x + b) < 0:
+            if y * (np.dot(w.transpose() * x + b)) < 0:
                nWrongSeparate += 1
                w += self.eta * y * x
                b += self.eta * y
@@ -37,11 +37,20 @@ class perception(object):
         self.w = w
         self.b = b
 
-    def predict(test_sample):
-        y = self.w * test_sample + self.b
+    def predict(self, test_sample):
+        y = np.dot(self.w.transpose() * test_sample) + self.b
         if y > 0:
           return 1
         else:
-          return -1    
+          return -1
+         
 
+if __name__ == "__main__":
+   X = np.array([[0,1],[0.5,0.7],[0.5,0.2],[1,0]])
+   Y = np.array([1,1,-1,-1])
+   clf = perceptron(0.3)
+   clf.fit(X,Y)
+   print "w: ", clf.w
+   print "b: ", clf.b
+  
 
