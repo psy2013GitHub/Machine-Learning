@@ -1,21 +1,30 @@
 
 from __future__ import division
 import numpy as np
+import copy
 
 class BTree_Node(object):
 	def __init__(self, parent=None, is_leaf=0, feature=None, threshold=None, is_categoral=0, sample_idx=None, value=None, proba=None):
 		self.children_left  = None
 		self.children_right = None
 		self.parent = parent
-		self.is_leaf = is_leaf		 
+		self.is_leaf = is_leaf
+		self.is_root = 0		 
 		self.threshold = threshold
 		self.feature = feature
 		self.sample_idx = sample_idx
 		self.proba = proba
 		self.is_categoral = 0
+		self.Ct = None
+		self.CT = None
+		self.T_size = None # leaf_nodes belong to self
 
 
 class DecisionTree(object):
+	'''
+	CART: classfication and regression tree
+	Breiman, 1984
+	'''
 	def __init__(self, criterion='gini', splitter='best', max_depth=None, min_samples_split=2, \
 		min_samples_leaf=1, max_features=None, random_state=None, \
 		compute_importances=None, max_leaf_nodes=None):
@@ -39,7 +48,7 @@ class DecisionTree(object):
 		self.depth = 0
 
 		# n_leaf_nodes
-		self.n_leaf_nodes = 0 
+		self.n_leaf_nodes = 0
 
 
 	def fit(self, train_X, train_Y, category_var_idx=None):
@@ -50,26 +59,29 @@ class DecisionTree(object):
 		self.train_Y = train_Y
 		self.category_var_idx = category_var_idx
 		# split node
-		root = BTree_Node(sample_idx=range(nsample))
-		self.split_node = [root]
+		self.root = BTree_Node(sample_idx=range(nsample)); self.root.is_root = 1
+		self.split_node = [self.root]
 		while 1:
-
+			
 			if not self.split_node or (self.max_leaf_nodes and self.max_leaf_nodes <= self.n_leaf_nodes + len(self.split_node)) \
 			 or (self.max_depth and self.depth >= self.max_depth): 
 				for node in self.split_node:
 					node.is_leaf = 1
-					node.proba = self.proba_calc(self.train_Y[node.sample_idx])
 					node.n_leaf_nodes += 1
+					node.proba, node.Ct = self.proba_gini_calc(self.train_Y[node.sample_idx])
+					node.CT = node.Ct
 				break
 
 			new_split_node = []
 			for node in self.split_node:
+				node.proba, node.Ct = self.proba_gini_calc(self.train_Y[node.sample_idx])
 				# min_samples_split
 				if len(node.sample_idx) <= self.min_samples_split:
 					node.is_leaf = 1
-					node.proba = self.proba_calc(self.train_Y[node.sample_idx])
 					self.n_leaf_nodes += 1
+					node.CT = node.Ct
 					continue
+
 				# feature & cut
 				if self.stratege == 1:
 					minFeatureIdx, minCut, minGini, minChildren_left, minChildren_right = self.Gini_select(node.sample_idx)
@@ -78,8 +90,8 @@ class DecisionTree(object):
 				# update info @ leaf
 				if not minFeatureIdx:
 					node.is_leaf = 1
-					node.proba = self.proba_calc(self.train_Y[node.sample_idx])
 					self.n_leaf_nodes += 1
+					node.CT = node.Ct
 					continue
 				else:
 					node.feature = minFeatureIdx
@@ -92,8 +104,8 @@ class DecisionTree(object):
 				if (self.stratege == 1 and (len(minChildren_left) < self.min_samples_leaf or len(minChildren_right) < self.min_samples_leaf)) \
 					or (self.stratege == 2 and not minFeatureIdx):
 					node.is_leaf = 1
-					node.proba = self.proba_calc(self.train_Y[node.sample_idx])
 					self.n_leaf_nodes += 1
+					node.CT = node.Ct
 					continue
 
 				# update leaves
@@ -167,14 +179,116 @@ class DecisionTree(object):
 					minChildren_left  = p_sample_idx[p_sample_idx1]
 					minChildren_right = p_sample_idx[p_sample_idx2]
 
-		return minFeatureIdx, minCut, minGini, minChildren_left, minChildren_right 
+		return minFeatureIdx, minCut, minGini, minChildren_left, minChildren_right
 
-	def proba_calc(self, Y):
-		P = []
+	def score(self, test_set):
+		# omitted
+		pass
+
+	def prune(self, validation_set):
+		'''
+		two steps:
+		      1, get leaf_nodes
+		      2, calcu alpha
+		'''
+		alpha_lst = []; Tree_lst = [copy.deepcopy(self)]; Score_lst = []
+		min_alpha = None; minInternalNode = None
+		k = 0
+		while 1:
+
+			k += 1
+			print k
+			# get Tk
+			T = Tree_lst[-1]
+
+			# if only root left, then break
+			if (not T.root.children_left) and (not T.root.children_right):
+				break
+
+			T.get_leaf(); T.curr_nodes = T.leaf_nodes
+			# from bottom to up
+			depth = 0
+			while 1:
+
+				print len(T.curr_nodes)
+
+				if not T.curr_nodes:
+					break
+
+				new_nodes = []
+				for node in T.curr_nodes:
+					if node.is_prune_visited:
+						continue
+					p = node.parent
+					if p == T.root:
+						pass
+					else:
+						# Ct_alpha, preserved in node 
+							# p.Ct
+						# CT_alpha
+						p.CT = 0.0; p.T_size = 0.0
+						if p.children_left:
+							p.children_left.is_prune_visited = 1
+							p.CT += p.children_left.CT
+							p.T_size += 1 if p.children_left.is_leaf else p.children_left.T_size
+						if p.children_right:
+							p.children_right.is_prune_visited = 1
+							p.CT += p.children_right.CT
+							p.T_size += 1 if p.children_right.is_leaf else p.children_left.T_size
+						# alpha
+						p.alpha = (p.CT - p.Ct) / (p.T_size - 1)
+						if not min_alpha or min_alpha > p.alpha:
+							minInternalNode = p
+							min_alpha = p.alpha
+
+						new_nodes.append(p)
+
+					T.curr_nodes = new_nodes
+
+			# from up to bottom
+			minInternalNode.is_leaf = 1; minInternalNode.children_left = None; minInternalNode.children_right = None
+			Tree_lst.append(T)
+
+			# cross validation
+			# scr = self.score(validation_set)
+			# Score_lst.append(scr)
+
+			# find mininum score
+
+
+
+	def get_leaf(self):
+		self.leaf_nodes = []
+		def add_leaf(node):
+			node.is_prune_visited = 0
+			if node.is_leaf:
+				self.leaf_nodes.append(node)
+
+		self.Travel_first_Recur(self.root, add_leaf)
+
+
+	def Travel_first_Recur(self, node, func, *func_args_tuple):
+		'''
+			func: function handle
+			func_args_tuple: argument of func, return val included as reference as C++
+		'''
+		# print func_args_tuple
+		# if node.is_leaf:
+		func(node, *func_args_tuple)
+		if node.children_left:
+			self.Travel_first_Recur(node.children_left, func, *func_args_tuple)
+		if node.children_left:
+			self.Travel_first_Recur(node.children_right, func, *func_args_tuple)
+		return
+
+
+	def proba_gini_calc(self, Y):
+		P = []; valGini = 0
 		for c in self.classes:
 			p = sum(np.nonzero(Y==c)[0]) / len(Y)
+			valGini += p * (1 - p)
 			P.append(p)
-		return P
+		return P, valGini
 
 
 if __name__ == "__main__":
@@ -207,4 +321,7 @@ if __name__ == "__main__":
 	clf.fit(train_X, train_Y, category_var_idx)
 	# print clf.depth
 	print clf.n_leaf_nodes
+	# clf.get_leaf()
+	# print len(clf.leaf_nodes)
+	clf.prune([])
 
