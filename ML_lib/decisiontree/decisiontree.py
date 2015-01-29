@@ -191,23 +191,23 @@ class DecisionTree(object):
 		      1, get leaf_nodes
 		      2, calcu alpha
 		'''
-		alpha_lst = []; Tree_lst = [copy.deepcopy(self)]; Score_lst = []
+		alpha_lst = []; Tree_lst = [copy.deepcopy(self)]; Score_lst = [None] # None instead of +Inf
 		min_alpha = None; minInternalNode = None
 		k = 0
+		nEval = None
 		while 1:
 
-			k += 1
-			print k
 			# get Tk
-			T = Tree_lst[-1]
+			T = copy.deepcopy(Tree_lst[-1]) 
 
-			# if only root left, then break
-			if (not T.root.children_left) and (not T.root.children_right):
+			# if only root left: i.e. nEval == 0 , then break
+			if not nEval or nEval == 0:
 				break
 
 			T.get_leaf(); T.curr_nodes = T.leaf_nodes
 			# from bottom to up
 			depth = 0
+			nEval = 0
 			while 1:
 
 				print len(T.curr_nodes)
@@ -223,6 +223,7 @@ class DecisionTree(object):
 					if p == T.root:
 						pass
 					else:
+						nEval += 1
 						# Ct_alpha, preserved in node 
 							# p.Ct
 						# CT_alpha
@@ -247,7 +248,7 @@ class DecisionTree(object):
 
 			# from up to bottom
 			minInternalNode.is_leaf = 1; minInternalNode.children_left = None; minInternalNode.children_right = None
-			Tree_lst.append(T)
+			alpha_lst.append(min_alpha); Tree_lst.append(T)
 
 			# cross validation
 			# scr = self.score(validation_set)
