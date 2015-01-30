@@ -201,7 +201,7 @@ class DecisionTree(object):
 			T = copy.deepcopy(Tree_lst[-1]) 
 
 			# if only root left: i.e. nEval == 0 , then break
-			if not nEval or nEval == 0:
+			if (not T.root.children_left) and (not T.root.children_right):
 				break
 
 			T.get_leaf(); T.curr_nodes = T.leaf_nodes
@@ -210,22 +210,22 @@ class DecisionTree(object):
 			nEval = 0
 			while 1:
 
-				print len(T.curr_nodes)
-
 				if not T.curr_nodes:
 					break
 
 				new_nodes = []
 				for node in T.curr_nodes:
+
+					p = node.parent
+					if not p: # root's parent
+						T.curr_nodes = None
+						minInternalNode = T.root # i.e. only root remained
+						break
 					if node.is_prune_visited:
 						continue
-					p = node.parent
-					if p == T.root:
-						pass
 					else:
-						nEval += 1
 						# Ct_alpha, preserved in node 
-							# p.Ct
+						# p.Ct
 						# CT_alpha
 						p.CT = 0.0; p.T_size = 0.0
 						if p.children_left:
@@ -321,7 +321,7 @@ if __name__ == "__main__":
 		compute_importances=None, max_leaf_nodes=None)
 	clf.fit(train_X, train_Y, category_var_idx)
 	# print clf.depth
-	print clf.n_leaf_nodes
+	# print clf.n_leaf_nodes
 	# clf.get_leaf()
 	# print len(clf.leaf_nodes)
 	clf.prune([])
