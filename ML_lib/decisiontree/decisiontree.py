@@ -248,7 +248,8 @@ class DecisionTree(object):
 
 			# from up to bottom
 			minInternalNode.is_leaf = 1; minInternalNode.children_left = None; minInternalNode.children_right = None
-			alpha_lst.append(min_alpha); Tree_lst.append(T)
+			alpha_lst.append(min_alpha); 
+			T.depth = None; Tree_lst.append(T) # depth set to none to fix in future
 
 			# cross validation
 			# scr = self.score(validation_set)
