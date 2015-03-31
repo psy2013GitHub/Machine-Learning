@@ -3,9 +3,11 @@ output: pdf_document
 ---
 Bias-Variance decomposition
 ========================================================
+# Usefull links
+[Understanding the Bias-Variance Tradeoff](http://scott.fortmann-roe.com/docs/BiasVariance.html)
 
 
-
+# 推导
 假设有m个包含某个样本i$, $y_i$)的数据集，模型M在某个数据集上拟合值为y_hat，
 在所有m个模型上拟合值y_hat的期望值为$E(\hat{y})$
 令 $y = f(x) + \epsilon$
