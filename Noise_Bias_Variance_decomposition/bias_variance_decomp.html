@@ -63,7 +63,18 @@ img {
 
 <div id="bias-variance-decomposition" class="section level1">
 <h1>Bias-Variance decomposition</h1>
-<p>假设有m个包含(<span class="math">\(x_i\)</span>, <span class="math">\(y_i\)</span>)的数据集，模型M在某个数据集上拟合值为y_hat， 在所有m个模型上拟合值y_hat的期望值为<span class="math">\(E(\hat{y})\)</span> 令 <span class="math">\(y = f(x) + \epsilon\)</span> 那么，在某个数据集上误差期望为</p>
+</div>
+<div id="usefull-links" class="section level1">
+<h1>Usefull links</h1>
+<p><a href="http://scott.fortmann-roe.com/docs/BiasVariance.html">Understanding the Bias-Variance Tradeoff</a></p>
+</div>
+<div class="section level1">
+<h1>理解</h1>
+<p>类似于心理学中的讲方差分解为信度(Variance) + 效度(Bias)</p>
+</div>
+<div class="section level1">
+<h1>推导</h1>
+<p>假设有m个包含某个样本i$, <span class="math">\(y_i\)</span>)的数据集，模型M在某个数据集上拟合值为y_hat， 在所有m个模型上拟合值y_hat的期望值为<span class="math">\(E(\hat{y})\)</span> 令 <span class="math">\(y = f(x) + \epsilon\)</span> 那么，在某个数据集上误差期望为</p>
 <p><span class="math">\[
 \begin{align}
 E(err) &amp;= E(y_i - \hat{y})^2  \\

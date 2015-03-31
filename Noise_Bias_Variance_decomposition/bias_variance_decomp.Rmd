@@ -1,11 +1,13 @@
 ---
-output: pdf_document
+output: html_document
 ---
 Bias-Variance decomposition
 ========================================================
 # Usefull links
 [Understanding the Bias-Variance Tradeoff](http://scott.fortmann-roe.com/docs/BiasVariance.html)
 
+# 理解
+类似于心理学中的讲方差分解为信度(Variance) + 效度(Bias)
 
 # 推导
 假设有m个包含某个样本i$, $y_i$)的数据集，模型M在某个数据集上拟合值为y_hat，
