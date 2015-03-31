@@ -1,0 +1,32 @@
+---
+output: pdf_document
+---
+Bias-Variance decomposition
+========================================================
+
+
+
+假设有m个包含某个样本i$, $y_i$)的数据集，模型M在某个数据集上拟合值为y_hat，
+在所有m个模型上拟合值y_hat的期望值为$E(\hat{y})$
+令 $y = f(x) + \epsilon$
+那么，在某个数据集上误差期望为
+
+$$
+\begin{align}
+E(err) &= E(y_i - \hat{y})^2  \\
+       &= E(f(x_i) + \epsilon - E(\hat{y}) + E(\hat{y}) - \hat{y})^2 \\
+       &= E{[f(x_i) - E(\hat{y})] + [E(\hat{y}) - \hat{y}] + \epsilon}^2 \\
+       &= E(f(x_i) - E(\hat{y}))^2 + E(E(\hat{y}) - \hat{y})^2 + \epsilon^2
+\end{align}
+$$
+
+上面之所以成立是因为交叉项
+$$
+\begin{align}
+        &{[f(x_i) - E(\hat{y})] * [E(\hat{y}) - \hat{y}]} \\
+        &= [f(x_i) - E(\hat{y})] * E[E(\hat{y}) - \hat{y}] \\
+        &= [f(x_i) - E(\hat{y})] * [E(\hat{y}) - E(\hat{y})] \\
+        &= 0 \\
+\end{align}
+$$
+
